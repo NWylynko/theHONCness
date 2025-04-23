@@ -626,6 +626,9 @@ app.get("/", (c) => {
           
           // Connect to WebSocket for the chat room
           connectWebSocket(roomId);
+          
+          // Ensure chat is scrolled to bottom when first shown
+          setTimeout(scrollToBottom, 100);
         }
         
         // Connect to WebSocket for a specific room
@@ -671,6 +674,9 @@ app.get("/", (c) => {
                 data.messages.forEach(msg => {
                   addMessageToChat(msg);
                 });
+                
+                // Make sure we scroll to bottom after loading history
+                scrollToBottom();
               } else if (data.type === 'message') {
                 addMessageToChat(data.message);
               }
@@ -724,7 +730,17 @@ app.get("/", (c) => {
           messageDiv.appendChild(content);
           chatMessages.appendChild(messageDiv);
           
-          // Scroll to bottom
+          // Scroll to bottom immediately
+          scrollToBottom();
+          
+          // Also scroll after a short delay to handle any rendering issues
+          setTimeout(scrollToBottom, 50);
+        }
+        
+        // Dedicated function for scrolling to bottom
+        function scrollToBottom() {
+          // Apply smooth scrolling behavior
+          chatMessages.style.scrollBehavior = 'smooth';
           chatMessages.scrollTop = chatMessages.scrollHeight;
         }
         
@@ -732,6 +748,14 @@ app.get("/", (c) => {
         document.addEventListener('DOMContentLoaded', () => {
           // Auto-join waiting room when page loads
           joinWaitingRoom();
+          
+          // Add resize handler to maintain scroll position
+          window.addEventListener('resize', () => {
+            // Only scroll if we're in chat mode
+            if (chatApp.style.display !== 'none') {
+              scrollToBottom();
+            }
+          });
         });
       </script>
     </body>
