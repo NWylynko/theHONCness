@@ -244,6 +244,116 @@ app.get("/", (c) => {
           }
         }
       </style>
+      <style>
+        /* Additional styles for the enhanced waiting room */
+        .waiting-animation {
+          display: flex;
+          justify-content: center;
+          margin: 20px 0;
+        }
+        
+        .bubble {
+          width: 20px;
+          height: 20px;
+          background-color: #3498db;
+          border-radius: 50%;
+          margin: 0 5px;
+          animation: bounce 1.5s infinite ease-in-out;
+        }
+        
+        .bubble-1 {
+          animation-delay: 0s;
+        }
+        
+        .bubble-2 {
+          animation-delay: 0.3s;
+        }
+        
+        .bubble-3 {
+          animation-delay: 0.6s;
+        }
+        
+        @keyframes bounce {
+          0%, 100% {
+            transform: translateY(0);
+            background-color: #3498db;
+          }
+          50% {
+            transform: translateY(-15px);
+            background-color: #2980b9;
+          }
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        .fun-fact-container {
+          background-color: #f8f9fa;
+          border-radius: 8px;
+          padding: 15px;
+          margin: 20px 0;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .fun-fact {
+          font-style: italic;
+          margin-bottom: 10px;
+        }
+        
+        .fun-button {
+          background-color: #28a745;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          padding: 8px 16px;
+          cursor: pointer;
+          transition: background-color 0.3s;
+        }
+        
+        .fun-button:hover {
+          background-color: #218838;
+        }
+        
+        .waiting-game {
+          margin-top: 25px;
+          border-top: 1px solid #e9ecef;
+          padding-top: 15px;
+        }
+        
+        .click-game {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          margin-top: 10px;
+        }
+        
+        .game-target {
+          padding: 12px 20px;
+          background-color: #dc3545;
+          color: white;
+          border-radius: 4px;
+          cursor: pointer;
+          user-select: none;
+          transition: transform 0.1s, background-color 0.2s;
+          position: relative;
+          margin-bottom: 10px;
+        }
+        
+        .game-target:hover {
+          background-color: #c82333;
+        }
+        
+        .game-target:active {
+          transform: scale(0.95);
+        }
+        
+        .game-score {
+          font-weight: bold;
+          font-size: 18px;
+        }
+      </style>
     </head>
     <body>
       <div class="container">
@@ -253,8 +363,28 @@ app.get("/", (c) => {
             <p>Looking for a chat partner... Please wait while we pair you with someone.</p>
             <div id="waitingStatus" class="waiting-info">
               <p>You are in the waiting room.</p>
+              <div class="waiting-animation">
+                <div class="bubble bubble-1"></div>
+                <div class="bubble bubble-2"></div>
+                <div class="bubble bubble-3"></div>
+              </div>
               <div class="waiting-position">Position: <span id="positionNumber">1</span></div>
               <p id="waitingMessage">Please wait to be paired with someone...</p>
+              
+              <!-- Fun facts or jokes section -->
+              <div class="fun-fact-container">
+                <p id="funFact" class="fun-fact">Did you know? The first message sent over the internet was "LO" - it was supposed to be "LOGIN" but the system crashed!</p>
+                <button id="newFactButton" class="fun-button">New Fact</button>
+              </div>
+              
+              <!-- Simple game to pass the time -->
+              <div class="waiting-game">
+                <h3>While you wait, play a quick game!</h3>
+                <div id="clickGame" class="click-game">
+                  <div id="gameTarget" class="game-target">Click me!</div>
+                  <div class="game-score">Score: <span id="gameScore">0</span></div>
+                </div>
+              </div>
             </div>
             <button id="joinWaitingRoomButton" class="join-button" style="display: none;">Join Waiting Room</button>
           </div>
@@ -317,9 +447,91 @@ app.get("/", (c) => {
         let waitingSocket = null;
         let userName = 'User-' + Math.floor(Math.random() * 1000);
         let userId = Math.floor(Math.random() * 10000).toString();
+        let gameScore = 0;
         
         // Event Listeners
         joinWaitingRoomButton.addEventListener('click', joinWaitingRoom);
+        
+        // Fun facts array
+        const funFacts = [
+          "Did you know? The first message sent over the internet was 'LO' - it was supposed to be 'LOGIN' but the system crashed!",
+          "In 1996, someone bought a pizza online for the first time ever.",
+          "The average person spends about 6 years of their life on social media.",
+          "Around 90% of the world's data has been created in just the last 2 years.",
+          "There are approximately 4.5 billion people connected to the internet globally.",
+          "The most expensive domain name ever sold was cars.com for $872 million.",
+          "The first computer virus was created in 1983 and was called 'Elk Cloner'.",
+          "The word 'robot' comes from the Czech word 'robota' meaning 'forced labor'.",
+          "The first website went live on August 6, 1991. It was about the World Wide Web project itself.",
+          "The first tweet ever was 'just setting up my twttr' by Jack Dorsey in 2006.",
+          "The QWERTY keyboard layout was designed to slow typists down to prevent jamming of mechanical typewriters.",
+          "In 2018, people watched over 50,000 years worth of content on YouTube every day.",
+          "The internet uses about 10% of the world's electricity.",
+          "The word 'spam' comes from a Monty Python sketch where the word 'spam' is repeated over and over.",
+          "The first mobile phone call was made in 1973 by Martin Cooper, a Motorola researcher."
+        ];
+        
+        // Jokes array
+        const jokes = [
+          "Why don't scientists trust atoms? Because they make up everything!",
+          "Why did the JavaScript developer wear glasses? Because he didn't see sharp.",
+          "How many programmers does it take to change a light bulb? None, that's a hardware problem.",
+          "Why was the computer cold? It left its Windows open!",
+          "Why did the programmer quit his job? Because he didn't get arrays.",
+          "What do you call a computer that sings? A Dell.",
+          "How do you organize a space party? You planet.",
+          "Why don't programmers like nature? It has too many bugs.",
+          "What's a computer's favorite snack? Microchips!",
+          "Why did the developer go broke? He used up all his cache."
+        ];
+        
+        // Set up game and fun facts
+        document.getElementById('newFactButton').addEventListener('click', showRandomFact);
+        document.getElementById('gameTarget').addEventListener('click', handleGameClick);
+        
+        function showRandomFact() {
+          const funFact = document.getElementById('funFact');
+          // Randomly decide between fact or joke
+          if (Math.random() > 0.5) {
+            const randomFact = funFacts[Math.floor(Math.random() * funFacts.length)];
+            funFact.textContent = randomFact;
+          } else {
+            const randomJoke = jokes[Math.floor(Math.random() * jokes.length)];
+            funFact.textContent = randomJoke;
+          }
+          
+          // Animate the fact change
+          funFact.style.animation = 'none';
+          setTimeout(() => {
+            funFact.style.animation = 'fadeIn 0.5s';
+          }, 10);
+        }
+        
+        function handleGameClick() {
+          gameScore++;
+          document.getElementById('gameScore').textContent = gameScore.toString();
+          
+          // Move the target to a random position
+          const gameTarget = document.getElementById('gameTarget');
+          const gameContainer = document.getElementById('clickGame');
+          
+          const maxX = gameContainer.offsetWidth - gameTarget.offsetWidth - 20;
+          const maxY = 100; // Limit vertical movement
+          
+          const randomX = Math.max(0, Math.floor(Math.random() * maxX));
+          const randomY = Math.max(0, Math.floor(Math.random() * maxY));
+          
+          // Use string concatenation instead of template literals to avoid TS errors
+          gameTarget.style.transform = 'translate(' + randomX + 'px, ' + randomY + 'px)';
+          
+          // Change color randomly
+          const colors = ['#dc3545', '#28a745', '#007bff', '#fd7e14', '#6610f2', '#6f42c1'];
+          const randomColor = colors[Math.floor(Math.random() * colors.length)];
+          gameTarget.style.backgroundColor = randomColor;
+        }
+        
+        // Show a random fact every 20 seconds
+        setInterval(showRandomFact, 20000);
         
         // Set up emoji keyboard
         document.querySelectorAll('.emoji-btn').forEach(btn => {
