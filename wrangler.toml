@@ -15,8 +15,8 @@ enabled = true
 
 [[kv_namespaces]]
 binding = "WAITING_ROOM_KV"
-id = "bb8d210bd06e4d7aaf6529b09c681520"
-preview_id = "__WAITING_ROOM_KV_PREVIEW_ID__"
+id = "7cf397a49dee4f0fae8e3bdc42c76ed7"
+preview_id = "0cf4cd7fcb6848d6b186e3930afd8449"
 
 # [[r2_buckets]]
 # binding = "MY_BUCKET"
